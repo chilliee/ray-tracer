@@ -1,0 +1,11 @@
+[submodule "glog"]
+	path = ext/glog
+	url = https://github.com/google/glog.git
+
+[submodule "CLI11"]
+	path = ext/CLI11
+	url = https://github.com/CLIUtils/CLI11
+
+[submodule "assimp"]
+	path = ext/assimp
+	url = https://github.com/assimp/assimp
