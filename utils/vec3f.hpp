@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ray_tracer.hpp"
 #include <cmath>
+#include <ostream>
 
 struct Vec3f {
     Vec3f() { x = y = z = 0.f; }
@@ -13,12 +13,10 @@ struct Vec3f {
     ~Vec3f() = default;
 
     float &operator[](int idx) {
-        LOG_ASSERT(idx >= 0 && idx <= 2);
         return data[idx];
     }
 
     float operator[](int idx) const {
-        LOG_ASSERT(idx >= 0 && idx <= 2);
         return data[idx];
     }
 

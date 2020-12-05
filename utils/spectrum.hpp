@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec3f.hpp"
+#include <ostream>
 
 #define GAMMA 2.1f
 
