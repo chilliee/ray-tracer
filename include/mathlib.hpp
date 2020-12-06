@@ -1,11 +1,11 @@
 #pragma once
 
-#include "vec3f.hpp"
+#include "mat4f.hpp"
+
+#include <limits>
 
 #define EPS_F 0.00001f
-#define PI_F 3.14159265358979323846264338327950288f
-#define Radians(v) ((v) * (PI_F / 180.0f))
-#define Degrees(v) ((v) * (180.0f / PI_F))
+#define INF_F (std::numeric_limits<float>::infinity())
 
 template <typename T> inline T clamp(T x, T min, T max) { return std::min(std::max(x, min), max); }
 

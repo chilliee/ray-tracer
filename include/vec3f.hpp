@@ -12,33 +12,28 @@ struct Vec3f {
     Vec3f &operator=(const Vec3f &) = default;
     ~Vec3f() = default;
 
-    float &operator[](int idx) {
-        return data[idx];
-    }
+    float &operator[](int idx) { return data[idx]; }
+    float operator[](int idx) const { return data[idx]; }
 
-    float operator[](int idx) const {
-        return data[idx];
-    }
+    Vec3f operator+=(Vec3f v) { x += v.x; y += v.y; z += v.z; return *this; }
+    Vec3f operator-=(Vec3f v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+    Vec3f operator*=(Vec3f v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+    Vec3f operator/=(Vec3f v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
 
-    Vec3f operator+=(const Vec3f &v) { x += v.x; y += v.y; z += v.z; return *this; }
-    Vec3f operator-=(const Vec3f &v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-    Vec3f operator*=(const Vec3f &v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
-    Vec3f operator/=(const Vec3f &v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
+    Vec3f operator+=(float s) { x += s; y += s; z += s; return *this; }
+    Vec3f operator-=(float s) { x -= s; y -= s; z -= s; return *this; }
+    Vec3f operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+    Vec3f operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
 
-    Vec3f operator+=(const float &s) { x += s; y += s; z += s; return *this; }
-    Vec3f operator-=(const float &s) { x -= s; y -= s; z -= s; return *this; }
-    Vec3f operator*=(const float &s) { x *= s; y *= s; z *= s; return *this; }
-    Vec3f operator/=(const float &s) { x /= s; y /= s; z /= s; return *this; }
+    Vec3f operator+(Vec3f v) const { return Vec3f(x + v.x, y + v.y, z + v.z); }
+    Vec3f operator-(Vec3f v) const { return Vec3f(x - v.x, y - v.y, z - v.z); }
+    Vec3f operator*(Vec3f v) const { return Vec3f(x * v.x, y * v.y, z * v.z); }
+    Vec3f operator/(Vec3f v) const { return Vec3f(x / v.x, y / v.y, z / v.z); }
 
-    Vec3f operator+(Vec3f &v) const { return Vec3f(x + v.x, y + v.y, z + v.z); }
-    Vec3f operator-(Vec3f &v) const { return Vec3f(x - v.x, y - v.y, z - v.z); }
-    Vec3f operator*(Vec3f &v) const { return Vec3f(x * v.x, y * v.y, z * v.z); }
-    Vec3f operator/(Vec3f &v) const { return Vec3f(x / v.x, y / v.y, z / v.z); }
-
-    Vec3f operator+(const float &s) const { return Vec3f(x + s, y + s, z + s); }
-    Vec3f operator-(const float &s) const { return Vec3f(x - s, y - s, z - s); }
-    Vec3f operator*(const float &s) const { return Vec3f(x * s, y * s, z * s); }
-    Vec3f operator/(const float &s) const { return Vec3f(x / s, y / s, z / s); }
+    Vec3f operator+(float s) const { return Vec3f(x + s, y + s, z + s); }
+    Vec3f operator-(float s) const { return Vec3f(x - s, y - s, z - s); }
+    Vec3f operator*(float s) const { return Vec3f(x * s, y * s, z * s); }
+    Vec3f operator/(float s) const { return Vec3f(x / s, y / s, z / s); }
 
     bool operator==(Vec3f v) const { return x == v.x && y == v.y && z == v.z; }
     bool operator!=(Vec3f v) const { return x != v.x || y != v.y || z != v.z; }
