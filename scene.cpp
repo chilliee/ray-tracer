@@ -57,12 +57,13 @@ BVHAccel::BVHAccel(const std::vector<std::array<size_t, 3>> meshes,
 
   // Convinient in recursively building BVH
   this->max_leaf_size = max_leaf_size;
-
+/*
   vector<BVHPrimitiveInfo> prims_info(local_meshes.size());
+
   for (size_t i = 0; i < primitives.size(); ++i){
     prims_info[i] = {i, primitives[i]->get_bbox()};
   }
-
+*/
   // Build BVH tree
   total_nodes = 0;
   std::vector<std::array<size_t, 3>> ordered_prims;
@@ -98,6 +99,7 @@ BVHNode *BVHAccel::recursiveBuild(
     int *total_nodes, size_t start, size_t end,
     std::vector<std::array<size_t, 3>> &ordered_prims)
 {
+  /*
   if (start >= end)
     return NULL;
 
@@ -219,6 +221,7 @@ BVHNode *BVHAccel::recursiveBuild(
   node->r = recursiveBuild(total_nodes, mid, end, ordered_prims, prims_info);
 
   return node;
+  */
 }
 
 BVHAccel::~BVHAccel()
