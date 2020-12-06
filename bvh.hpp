@@ -34,26 +34,31 @@ class BVHAccel
 {
 public:
   BVHAccel() {}
-  BVHAccel(const std::vector<std::array<size_t, 3>> meshes, size_t max_leaf_size = 4);
+  BVHAccel(const std::vector<std::array<size_t, 3>> meshes,std::vector<Vec3f> verts, size_t max_leaf_size = 4);
 
   ~BVHAccel();
 
 
   BBox get_bbox() const;
 
-
+  void printTree();
+  void recursiveprint(BVHNode* node);
 
 
 
 private:
+  std::vector<Vec3f> verts;
   std::vector<std::array<size_t, 3>> local_meshes;
   BVHNode *root; ///< root node of the BVH
   int total_nodes;
   size_t max_leaf_size;
+
   BVHNode *makeLeafNode(
       BVHNode *node, size_t start, size_t end,
-      std::vector<std::array<size_t, 3>> &ordered_prims);
+      std::vector<std::array<size_t, 3>> &ordered_prims,
+    std::vector<BVHPrimitiveInfo> &prims_info);
   BVHNode *recursiveBuild(
       int *total_nodes, size_t start, size_t end,
-      std::vector<std::array<size_t, 3>> &ordered_prims);
+      std::vector<std::array<size_t, 3>> &ordered_prims,
+    std::vector<BVHPrimitiveInfo> &prims_info);
 };

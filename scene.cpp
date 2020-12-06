@@ -47,9 +47,10 @@ BVHNode::~BVHNode()
 }
 
 BVHAccel::BVHAccel(const std::vector<std::array<size_t, 3>> meshes,
+                    std::vector<Vec3f> verticles,
                    size_t max_leaf_size)
 {
-
+  this -> verts = verticles;
   this->local_meshes = meshes;
 
   if (meshes.size() == 0)
@@ -57,18 +58,22 @@ BVHAccel::BVHAccel(const std::vector<std::array<size_t, 3>> meshes,
 
   // Convinient in recursively building BVH
   this->max_leaf_size = max_leaf_size;
-/*
-  vector<BVHPrimitiveInfo> prims_info(local_meshes.size());
 
-  for (size_t i = 0; i < primitives.size(); ++i){
-    prims_info[i] = {i, primitives[i]->get_bbox()};
+  std::vector<BVHPrimitiveInfo> prims_info(local_meshes.size());
+
+  for (size_t i = 0; i < local_meshes.size(); ++i){
+    BBox curBox;
+    curBox.expand(verts[local_meshes[i][0]]);
+    curBox.expand(verts[local_meshes[i][1]]);
+    curBox.expand(verts[local_meshes[i][2]]);
+    prims_info[i] = {i, curBox};
   }
-*/
+
   // Build BVH tree
   total_nodes = 0;
   std::vector<std::array<size_t, 3>> ordered_prims;
   ordered_prims.reserve(meshes.size());
-  root = recursiveBuild(&total_nodes, 0, meshes.size(), ordered_prims);
+  root = recursiveBuild(&total_nodes, 0, meshes.size(), ordered_prims, prims_info);
 
   // Reorder primitives
   local_meshes.swap(ordered_prims);
@@ -78,11 +83,13 @@ BVHAccel::BVHAccel(const std::vector<std::array<size_t, 3>> meshes,
 
 BVHNode *BVHAccel::makeLeafNode(
     BVHNode *node, size_t start, size_t end,
-    std::vector<std::array<size_t, 3>> &ordered_prims)
+    std::vector<std::array<size_t, 3>> &ordered_prims,
+    std::vector<BVHPrimitiveInfo> &prims_info)
 {
   for (size_t i = start; i < end; i++)
   {
-    ordered_prims.push_back(local_meshes[i]);
+    size_t idx = prims_info[i].idx;
+    ordered_prims.push_back(local_meshes[idx]);
   }
   node->l = NULL;
   node->r = NULL;
@@ -97,9 +104,9 @@ inline size_t max_dimension(Vec3f &v)
 
 BVHNode *BVHAccel::recursiveBuild(
     int *total_nodes, size_t start, size_t end,
-    std::vector<std::array<size_t, 3>> &ordered_prims)
+    std::vector<std::array<size_t, 3>> &ordered_prims,
+  std::vector<BVHPrimitiveInfo> &prims_info)
 {
-  /*
   if (start >= end)
     return NULL;
 
@@ -119,9 +126,9 @@ BVHNode *BVHAccel::recursiveBuild(
 
   // Select the dim with the longest extent along it
   size_t dim = max_dimension(center_bounds.extent);
-  double minBound = center_bounds.min[dim];
-  double maxBound = center_bounds.max[dim];
-  double dimExtent = center_bounds.extent[dim];
+  float minBound = center_bounds.min[dim];
+  float maxBound = center_bounds.max[dim];
+  float dimExtent = center_bounds.extent[dim];
 
   // Partition primitives into two sets and build children
   size_t mid = (start + end) / 2;
@@ -134,19 +141,19 @@ BVHNode *BVHAccel::recursiveBuild(
   if (range == 2)
   { // Directly partition
     if (prims_info[start].centroid[dim] > prims_info[mid].centroid[dim])
-      swap(prims_info[start], prims_info[mid]);
+      std::swap(prims_info[start], prims_info[mid]);
   }
   else
   {
     // Allocate BucketInfo for SAH partition buckets
     const size_t nBuckets = 12;
     const size_t nPartitions = nBuckets - 1;
-    const double mid_split = (nPartitions - 1) / 2.;
+    const float mid_split = (nPartitions - 1) / 2.;
     BucketInfo buckets[nBuckets];
 
     // Initialize BucketInfo for SAH partition buckets
-    double extent2bucket = (double)nBuckets / dimExtent;
-    auto compute_bucket = [minBound, extent2bucket, nBuckets](double centroid) {
+    float extent2bucket = (float)nBuckets / dimExtent;
+    auto compute_bucket = [minBound, extent2bucket, nBuckets](float centroid) {
         int b = (int) floor((centroid - minBound) * extent2bucket);
         if (b >= nBuckets) b = nBuckets - 1;
         if (b < 0) b = 0;
@@ -159,8 +166,8 @@ BVHNode *BVHAccel::recursiveBuild(
     }
 
     // Compute costs for splitting after each bucket
-    double SN = bounds.surface_area();
-    double cost[nPartitions];
+    float SN = bounds.surface_area();
+    float cost[nPartitions];
     for (size_t i = 0; i < nPartitions; i++)
     {
       BBox A, B;
@@ -176,23 +183,23 @@ BVHNode *BVHAccel::recursiveBuild(
         NB += buckets[j].count;
       }
 
-      double SA = A.surface_area();
-      double SB = B.surface_area();
+      float SA = A.surface_area();
+      float SB = B.surface_area();
       cost[i] = 1 + (NA * SA + NB * SB) / SN;
     }
 
     // Find bucket to split at that minimizes SAH metric
-    double min_cost = *min_element(&cost[0], &cost[nBuckets - 1]);
-    vector<size_t> possible_splits;
+    float min_cost = *std::min_element(&cost[0], &cost[nBuckets - 1]);
+    std::vector<size_t> possible_splits;
     for (size_t i = 0; i < nPartitions; i++)
       if (cost[i] == min_cost)
         possible_splits.push_back(i);
     // Choose the best split closest to the center
-    double mid_dist = INF_D;
+    float mid_dist = INF_F;
     size_t best_split;
     for (auto &split : possible_splits)
     {
-      double dist = abs(split - mid_split);
+      float dist = abs(split - mid_split);
       if (dist < mid_dist)
       {
         mid_dist = dist;
@@ -201,10 +208,10 @@ BVHNode *BVHAccel::recursiveBuild(
     }
 
     // Either create leaf or split primitives at selected SAH bucket
-    double leaf_cost = range;
+    float leaf_cost = range;
     if (range > max_leaf_size || min_cost < leaf_cost)
     {
-      BVHPrimitiveInfo *pmid = partition(
+      BVHPrimitiveInfo *pmid = std::partition(
           &prims_info[start], &prims_info[end - 1] + 1,
           [=](const BVHPrimitiveInfo &pi) {
             size_t b = compute_bucket(pi.centroid[dim]);
@@ -221,14 +228,26 @@ BVHNode *BVHAccel::recursiveBuild(
   node->r = recursiveBuild(total_nodes, mid, end, ordered_prims, prims_info);
 
   return node;
-  */
+}
+
+void BVHAccel::printTree(){
+  BVHNode* cur = root;
+  this->recursiveprint(root);
+}
+
+void BVHAccel::recursiveprint(BVHNode*node){
+  if(node == NULL){return;}
+  printf("start node %d, range %d\n", node->start, node->range);
+  if(node->isLeaf()){return;}
+  recursiveprint(node->l);
+  recursiveprint(node->r);
 }
 
 BVHAccel::~BVHAccel()
 {
   // TODO (PathTracer):
   // Implement a proper destructor for your BVH accelerator aggregate
-  //delete root;
+  delete root;
 }
 
 
@@ -264,7 +283,8 @@ int Scene::load(const std::string &scene_file) {
     load_node(*this, scene, scene->mRootNode, aiMatrix4x4());
     load_camera(*this, scene);
     load_light(*this, scene);
-    BVHAccel(this->meshes);
+    BVHAccel bvhtree = BVHAccel(this->meshes, this->verts);
+    bvhtree.printTree();
     return 0;
 }
 
