@@ -1,10 +1,15 @@
 #pragma once
 
 #include "ray_tracer.hpp"
-
+#include "bbox.hpp"
 #include <string>
 #include <vector>
 #include <array>
+
+
+
+
+
 
 struct Camera {
     Ray generate_ray(float x, float y);
@@ -39,7 +44,7 @@ struct Material {
 class Scene {
 public:
     int load(const std::string &scene_file);
-    
+
     Camera cam;
     std::vector<Vec3f> verts;
     std::vector<std::array<size_t, 3>> meshes;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ray.hpp"
+#include "ray_tracer.hpp"
 
 struct BBox {
     Vec3f max;    ///< min corner of the bounding box
