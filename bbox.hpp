@@ -58,6 +58,32 @@ struct BBox {
     bool empty() const { return min.x > max.x || min.y > max.y || min.z > max.z; }
 
 
-    bool intersect(const Ray &r, float &t0, float &t1) const;
+    bool intersect(const Ray &r, float &t0, float &t1) const {
+        double tmin = (min.x - r.o.x) * r.inv_d.x;
+        double tmax = (max.x - r.o.x) * r.inv_d.x;
+        if (tmin > tmax) std::swap(tmin, tmax);
+        double tymin = (min.y - r.o.y) * r.inv_d.y;
+        double tymax = (max.y - r.o.y) * r.inv_d.y;
+        if (tymin > tymax) std::swap(tymin, tymax);
+
+        if (tmin > tymax || tymin > tmax) return false;
+        if (tymin > tmin) tmin = tymin;
+        if (tymax < tmax) tmax = tymax;
+
+        // z slab
+        double tzmin = (min.z - r.o.z) * r.inv_d.z;
+        double tzmax = (max.z - r.o.z) * r.inv_d.z;
+        if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+        if (tmin > tzmax || tzmin > tmax) return false;
+        if (tzmin > tmin) tmin = tzmin;
+        if (tzmax < tmax) tmax = tzmax;
+
+        if (tmin > r.max_t || tmax < r.min_t) return false;
+
+        t0 = tmin;
+        t1 = tmax;
+        return true;
+    }
 
 };
