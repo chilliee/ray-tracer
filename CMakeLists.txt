@@ -40,5 +40,5 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/include
 )
 
-ADD_EXECUTABLE(ray-tracer main.cpp scene.cpp simple.cpp)
+ADD_EXECUTABLE(ray-tracer main.cpp scene.cpp intersect.cpp simple.cpp)
 TARGET_LINK_LIBRARIES(ray-tracer assimp)

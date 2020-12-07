@@ -1,0 +1,10 @@
+./ray-tracer -s ../media/beast.dae
+./ray-tracer -s ../media/bunny.dae
+./ray-tracer -s ../media/cbox.dae
+./ray-tracer -s ../media/cow.dae
+./ray-tracer -s ../media/crazy_torus.dae
+./ray-tracer -s ../media/dragon.dae
+./ray-tracer -s ../media/duck.dae
+./ray-tracer -s ../media/peter.dae
+./ray-tracer -s ../media/sphere.dae
+./ray-tracer -s ../media/teapot.dae

@@ -24,11 +24,11 @@ int main(int argc, char const *argv[]) {
 
     std::cout << "Verteces Num: " << scene.verts.size() << std::endl;
     std::cout << "Meshes Num: " << scene.meshes.size() << std::endl;
-    std::cout << "Materal Num: " << scene.materials.size() << std::endl;
-    std::cout << "Camera Position: " << scene.cam.pos << " FOV: " << scene.cam.hfov << std::endl;
-    std::cout << "Lights Num: " << scene.lights.size() << std::endl;
-    for (auto &li : scene.lights)
-        std::cout << "  light@" << li.li_transform * li.pos << std::endl;
+    // std::cout << "Materal Num: " << scene.materials.size() << std::endl;
+    std::cout << "Camera Position: " << scene.cam.pos << "\nCamera FOV: " << scene.cam.hfov / PI_F * 180 << std::endl;
+    //std::cout << "Lights Num: " << scene.lights.size() << std::endl;
+    //for (auto &li : scene.lights)
+    //    std::cout << "  light@" << li.li_transform * li.pos << std::endl;
 
     // Setup camera
     scene.cam.setup((float) ((double) width / (double) height));
