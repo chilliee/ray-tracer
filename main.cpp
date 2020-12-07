@@ -60,16 +60,17 @@ int main(int argc, char const *argv[])
 
     std::vector<Vec3f> framebuffer(width*height);
 
+    float Imax = 0;
+
     // Intersect test start here
     for (size_t y = 0; y < height; y++) {
-        float ys = ((double) y + 0.5) / (double) height;
+        float ys = (y + 0.5) / height;
         for (size_t x = 0; x < width; x++) {
-            float xs = ((double) x + 0.5) / (double) width;
+            float xs = (x + 0.5) / width;
             Ray r = scene.cam.generate_ray(xs, ys);
             bool hit = false;
 
             //std::cout << r.d << " " << r.o << std::endl;
-
             for (auto &it : scene.meshes) {
                 Vec3f p0 = scene.verts[it[0]];
                 Vec3f p1 = scene.verts[it[1]];
@@ -82,7 +83,8 @@ int main(int argc, char const *argv[])
 
             if (hit) {
                 // std::cout << r.max_t << std::endl;
-                framebuffer[x+y*width] = Vec3f(1.0, 1.0, 1.0);
+                if (r.max_t > Imax) Imax = r.max_t;
+                framebuffer[x+y*width] = Vec3f(r.max_t, r.max_t, r.max_t);
             }
         }
     }
@@ -92,7 +94,7 @@ int main(int argc, char const *argv[])
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (size_t i = 0; i < height*width; ++i) {
         for (size_t j = 0; j<3; j++) {
-            ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i][j])));
+            ofs << (char)(255 / Imax * std::max(0.f, std::min(Imax, framebuffer[i][j])));
         }
     }
     ofs.close();

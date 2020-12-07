@@ -21,7 +21,6 @@ public:
     virtual BBox get_bbox() const = 0;
     virtual bool intersect(const Ray& r) const = 0;
     virtual bool intersect(const Ray& r, Intersection* i) const = 0;
-    virtual BSDF* get_bsdf() const = 0;
 };
 
 class Triangle : public Primitive {
@@ -30,10 +29,9 @@ public:
     BBox get_bbox() const;
     bool intersect(const Ray& r) const;
     bool intersect(const Ray& r, Intersection* i) const;
-    BSDF* get_bsdf() const;
 
 private:
     const Scene* scene;
     size_t v1, v2, v3;
-    
+
 };
