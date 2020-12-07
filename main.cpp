@@ -6,41 +6,16 @@
 #include <iomanip>
 #include <fstream>
 
-bool intersect(Ray& r, const Vec3f &p0, const Vec3f &p1, const Vec3f &p2) {
-  Vec3f e1 = p1 - p0;
-  Vec3f e2 = p2 - p0;
-
-  Vec3f e1_x_d = cross(e1, r.d);
-  double det = dot(e1_x_d, e2);
-  if (det < EPS_F && det > -EPS_F) return false;
-
-  double inv_det = 1.0 / det;
-  Vec3f s = r.o - p0;
-  double v = dot(e1_x_d, s) * inv_det;
-  if (v < 0. || v > 1.) return false;
-
-  Vec3f s_x_e2 = cross(s, e2);
-  double u = -dot(s_x_e2, r.d) * inv_det;
-  if (u < 0. || u + v > 1.) return false;
-
-  double t = -dot(s_x_e2, e1) * inv_det;
-  if (t < r.min_t || t > r.max_t) return false;
-
-  if (r.max_t > t)
-    r.max_t = t;
-  return true;
-}
-
-int main(int argc, char const *argv[])
-{
-    std::string scene_file;
+int main(int argc, char const *argv[]) {
+    std::string scene_file, output_file="out.ppm";
     size_t width=640, height=480;
 
     // CLI args
     CLI::App args{"A tiny ray-tracer"};
     args.add_option("-s,--scene", scene_file, "Scene file");
-    args.add_option("-x,--width", width, "image width");
-    args.add_option("-y,--height", height, "image height");
+    args.add_option("-x,--width", width, "Image width");
+    args.add_option("-y,--height", height, "Image height");
+    args.add_option("-o,--output", output_file, "Output file");
     CLI11_PARSE(args, argc, argv); // Now parse!
 
     Scene scene;
@@ -60,41 +35,14 @@ int main(int argc, char const *argv[])
 
     std::vector<Vec3f> framebuffer(width*height);
 
-    float Imax = 0;
-
-    // Intersect test start here
-    for (size_t y = 0; y < height; y++) {
-        float ys = (y + 0.5) / height;
-        for (size_t x = 0; x < width; x++) {
-            float xs = (x + 0.5) / width;
-            Ray r = scene.cam.generate_ray(xs, ys);
-            bool hit = false;
-
-            //std::cout << r.d << " " << r.o << std::endl;
-            for (auto &it : scene.meshes) {
-                Vec3f p0 = scene.verts[it[0]];
-                Vec3f p1 = scene.verts[it[1]];
-                Vec3f p2 = scene.verts[it[2]];
-
-                bool result = intersect(r, p0, p1, p2);
-                // std::cout << "  " << p0 << " " << p1 << " " << p2 << " result: " << result << std::endl;
-                if (result) hit = true;
-            }
-
-            if (hit) {
-                // std::cout << r.max_t << std::endl;
-                if (r.max_t > Imax) Imax = r.max_t;
-                framebuffer[x+y*width] = Vec3f(r.max_t, r.max_t, r.max_t);
-            }
-        }
-    }
+    simpleTrace(scene, framebuffer, width, height);
 
     std::ofstream ofs; // save the framebuffer to file
-    ofs.open("./out.ppm");
+    ofs.open(output_file);
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (size_t i = 0; i < height*width; ++i) {
         for (size_t j = 0; j<3; j++) {
-            ofs << (char)(255 / Imax * std::max(0.f, std::min(Imax, framebuffer[i][j])));
+            ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i][j])));
         }
     }
     ofs.close();

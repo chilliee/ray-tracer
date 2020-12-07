@@ -16,7 +16,8 @@ if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/assimp/cmake")
     "\"git submodule update --init --recursive\"")
 endif()
 
-set (CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_FLAGS -fopenmp)
 
 ###########################################################################
 # CLI11
@@ -39,5 +40,5 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/include
 )
 
-ADD_EXECUTABLE(ray-tracer main.cpp scene.cpp)
+ADD_EXECUTABLE(ray-tracer main.cpp scene.cpp simple.cpp)
 TARGET_LINK_LIBRARIES(ray-tracer assimp)

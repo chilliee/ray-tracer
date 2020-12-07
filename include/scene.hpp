@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ray_tracer.hpp"
+#include "ray.hpp"
+#include "spectrum.hpp"
 
 #include <string>
 #include <vector>
