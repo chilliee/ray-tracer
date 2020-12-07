@@ -7,14 +7,15 @@
 #include <array>
 
 struct Camera {
+    void setup(float ar_new);
     Ray generate_ray(float x, float y);
 
     Mat4f cam_transform;
 
-    // In camera space
+    // In world space
     Vec3f pos;
-    Vec3f dir;
 
+    float hfov, ar;
     float scale_w, scale_h;
 };
 

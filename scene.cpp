@@ -18,12 +18,19 @@ static void load_camera(Scene &scobj, const aiScene *scene);
 static void load_light(Scene &scobj, const aiScene *scene);
 
 Ray Camera::generate_ray(float x, float y) {
-    Vec3f d( (2 * x - 1) * scale_w, (2 * y - 1) * scale_h, -1.f );
+    Vec3f d( (2 * x - 1) * scale_w, (1 - 2 * y) * scale_h, -1.f );
 
     d = cam_transform * d;
     d.normalize();
 
     return Ray(pos, d, 0);
+}
+
+void Camera::setup(float ar_new) {
+    ar = ar_new;
+
+    scale_w = tan( hfov / 2 );
+    scale_h = scale_w / ar;
 }
 
 int Scene::load(const std::string &scene_file) {
@@ -44,6 +51,7 @@ int Scene::load(const std::string &scene_file) {
         return -1;
     }
 
+    scene->mRootNode->mTransformation = aiMatrix4x4();
     load_node(*this, scene, scene->mRootNode, aiMatrix4x4());
     load_camera(*this, scene);
     load_light(*this, scene);
@@ -63,7 +71,7 @@ static void load_mat(Scene &scobj, size_t mesh_offset, const aiScene *scene, con
     ai_mat.Get(AI_MATKEY_COLOR_EMISSIVE, emissive);
     material.emissive = aiSpec(emissive);
 
-        aiColor3D reflectance;
+    aiColor3D reflectance;
     ai_mat.Get(AI_MATKEY_COLOR_REFLECTIVE, reflectance);
     material.reflectance = aiSpec(reflectance);
 
@@ -81,26 +89,32 @@ static void load_mat(Scene &scobj, size_t mesh_offset, const aiScene *scene, con
 
 static void load_node(Scene &scobj, const aiScene *scene, const aiNode *node, aiMatrix4x4 transform) {
     transform = transform * node->mTransformation;
-    Mat4f o2w = aiMat(transform);
 
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+        size_t vert_offset = scobj.verts.size();
         size_t mesh_offset = scobj.meshes.size();
 
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-            const aiVector3D &pos = mesh->mVertices[j];
-            scobj.verts.push_back( o2w * Vec3f(pos.x, pos.y, pos.z));
+            const aiVector3D &pos = transform * mesh->mVertices[j];
+            scobj.verts.push_back(Vec3f(pos.x, pos.y, pos.z));
+
+            // std::cout << "World space: " << pos.x << " " << pos.y <<" " << pos.z << std::endl;
         }
+
+        //std::cout << vert_offset << " " << mesh->mNumVertices << std::endl;
 
         for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
             const aiFace &face = mesh->mFaces[j];
             if (face.mNumIndices != 3) continue;
 
-            std::array<size_t, 3> mesh;
-            mesh[0] = face.mIndices[0] + mesh_offset;
-            mesh[1] = face.mIndices[1] + mesh_offset;
-            mesh[2] = face.mIndices[2] + mesh_offset;
-            scobj.meshes.push_back(mesh);
+            std::array<size_t, 3> tri_mesh;
+            tri_mesh[0] = face.mIndices[0] + vert_offset;
+            tri_mesh[1] = face.mIndices[1] + vert_offset;
+            tri_mesh[2] = face.mIndices[2] + vert_offset;
+
+            //std::cout << tri_mesh[0] << ", " << tri_mesh[1] << ", " << tri_mesh[2] << "\n";
+            scobj.meshes.push_back(tri_mesh);
         }
 
         load_mat(scobj, mesh_offset, scene, mesh);
@@ -128,16 +142,17 @@ static void load_camera(Scene &scobj, const aiScene *scene) {
 
     const aiCamera &aiCam = *scene->mCameras[0];
 
-    scobj.cam.cam_transform = aiMat(node_transform(scene->mRootNode->FindNode(aiCam.mName)));
-    float ar = aiCam.mAspect;
-    float hfov = aiCam.mHorizontalFOV;
-    float vfov = hfov / ar;
+    aiMatrix4x4 transform = node_transform(scene->mRootNode->FindNode(aiCam.mName));
+    aiVector3D ascale, arot, apos;
+    transform.Decompose(ascale, arot, apos);
+    Vec3f pos = aiVec(apos);
+    Vec3f rot = aiVec(arot);
+    Vec3f scale = aiVec(ascale);
 
-    scobj.cam.scale_w = tan( hfov * PI_F / (2 * 180) );
-    scobj.cam.scale_h = tan( vfov * PI_F / (2 * 180) );
+    scobj.cam.cam_transform = Mat4f::euler(Degrees(rot).range(0.0f, 360.0f));
+    scobj.cam.hfov = aiCam.mHorizontalFOV;
 
-    scobj.cam.pos = scobj.cam.cam_transform * aiVec(aiCam.mPosition);
-    scobj.cam.dir = scobj.cam.cam_transform * aiVec(aiCam.mLookAt);
+    scobj.cam.pos = aiVec(transform * aiCam.mPosition);
 }
 
 static void load_light(Scene &scobj, const aiScene *scene) {

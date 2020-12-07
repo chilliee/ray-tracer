@@ -47,8 +47,7 @@ struct BBox {
 
     Vec3f centroid() { return (min + max) / 2; }
 
-    float surface_area() const
-    {
+    float surface_area() const {
         if (empty())
             return 0.0;
         return 2 *
@@ -56,7 +55,6 @@ struct BBox {
     }
 
     bool empty() const { return min.x > max.x || min.y > max.y || min.z > max.z; }
-
 
     bool intersect(const Ray &r, float &t0, float &t1) const {
         double tmin = (min.x - r.o.x) * r.inv_d.x;
