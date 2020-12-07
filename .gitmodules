@@ -1,7 +1,7 @@
-[submodule "CLI11"]
+[submodule "ext/CLI11"]
 	path = ext/CLI11
 	url = https://github.com/CLIUtils/CLI11
 
-[submodule "assimp"]
+[submodule "ext/assimp"]
 	path = ext/assimp
 	url = https://github.com/assimp/assimp
