@@ -45,7 +45,7 @@ struct BBox {
         extent = max - min;
     }
 
-    Vec3f centroid() { return (min + max) / 2; }
+    Vec3f centroid() const { return (min + max) / 2; }
 
     float surface_area() const {
         if (empty())
@@ -57,11 +57,11 @@ struct BBox {
     bool empty() const { return min.x > max.x || min.y > max.y || min.z > max.z; }
 
     bool intersect(const Ray &r, float &t0, float &t1) const {
-        double tmin = (min.x - r.o.x) * r.inv_d.x;
-        double tmax = (max.x - r.o.x) * r.inv_d.x;
+        float tmin = (min.x - r.o.x) * r.inv_d.x;
+        float tmax = (max.x - r.o.x) * r.inv_d.x;
         if (tmin > tmax) std::swap(tmin, tmax);
-        double tymin = (min.y - r.o.y) * r.inv_d.y;
-        double tymax = (max.y - r.o.y) * r.inv_d.y;
+        float tymin = (min.y - r.o.y) * r.inv_d.y;
+        float tymax = (max.y - r.o.y) * r.inv_d.y;
         if (tymin > tymax) std::swap(tymin, tymax);
 
         if (tmin > tymax || tymin > tmax) return false;
@@ -69,8 +69,8 @@ struct BBox {
         if (tymax < tmax) tmax = tymax;
 
         // z slab
-        double tzmin = (min.z - r.o.z) * r.inv_d.z;
-        double tzmax = (max.z - r.o.z) * r.inv_d.z;
+        float tzmin = (min.z - r.o.z) * r.inv_d.z;
+        float tzmax = (max.z - r.o.z) * r.inv_d.z;
         if (tzmin > tzmax) std::swap(tzmin, tzmax);
 
         if (tmin > tzmax || tzmin > tmax) return false;

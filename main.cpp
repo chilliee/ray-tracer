@@ -35,7 +35,9 @@ int main(int argc, char const *argv[]) {
 
     std::vector<Vec3f> framebuffer(width*height);
 
-    simpleTrace(scene, framebuffer, width, height);
+    BVHTrace(scene, framebuffer, width, height);
+
+    // simpleTrace(scene, framebuffer, width, height);
 
     std::ofstream ofs; // save the framebuffer to file
     ofs.open(output_file);

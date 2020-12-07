@@ -24,7 +24,6 @@ bool mesh_intersect(Ray& r, const Vec3f &p0, const Vec3f &p1, const Vec3f &p2) {
     if (t < r.min_t || t > r.max_t)
         return false;
 
-    if (r.max_t > t)
-        r.max_t = t;
+    r.max_t = t;
     return true;
 }
