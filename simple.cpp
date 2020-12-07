@@ -48,8 +48,9 @@ int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, siz
         }
     }
 
-    pixelholder.resize(height * width, 0.f);
+    pixelholder.resize(height * width, INF_F);
     auto start_t = std::chrono::high_resolution_clock::now();
+    #pragma omp parallel for
     for (size_t k = 0; k<rayholder.size(); k++) {
         Ray r = rayholder[k];
         bool hit = false;
@@ -74,10 +75,9 @@ int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, siz
     std::cout << "Time elapse: " << time_elapsed.count() << "\n";
 
     // Get image
-    auto max_it = std::max_element(pixelholder.begin(), pixelholder.end());
-    float Imax = *max_it;
+    auto min_it = std::min_element(pixelholder.begin(), pixelholder.end());
     for (size_t k = 0; k < framebuffer.size(); k++)
-        framebuffer[k] = Vec3f(pixelholder[k] / Imax);
+        framebuffer[k] = Vec3f(*min_it / pixelholder[k]);
 
     return 0;
 }
