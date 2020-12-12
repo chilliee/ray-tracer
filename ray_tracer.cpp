@@ -59,7 +59,7 @@ int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, siz
     return 0;
 }
 
-int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t height, int light_per_pixel=4) {
+int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t height, int light_per_pixel) {
     // Setup camera
     std::vector<Ray> rayholder;
     std::vector<float> pixelholder;
@@ -68,7 +68,7 @@ int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t
     rayholder.reserve(height * width * light_per_pixel);
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
-            for (int n = 0; n < light_per_pixel) {
+            for (int n = 0; n < light_per_pixel; n++) {
                 float ys = (y + (float) std::rand() / RAND_MAX) / height;
                 float xs = (x + (float) std::rand() / RAND_MAX) / width;
                 Ray r = scene.cam.generate_ray(xs, ys);
@@ -98,10 +98,11 @@ int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t
 
     // Get image
     auto min_it = std::min_element(pixelholder.begin(), pixelholder.end());
-    for (size_t k = 0; k < framebuffer.size(); k++)
+    for (size_t k = 0; k < framebuffer.size(); k++) {
         for (int n = 0; n < light_per_pixel; n++)
             framebuffer[k] += Vec3f(*min_it / pixelholder[light_per_pixel * k + n]);
         framebuffer[k] *= 1.f / light_per_pixel;
+    }
 
     return 0;
 }

@@ -9,12 +9,14 @@
 int main(int argc, char const *argv[]) {
     std::string scene_file, output_file="out.ppm";
     size_t width=640, height=480;
+    int light_per_pixel = 4;
 
     // CLI args
     CLI::App args{"A tiny ray-tracer"};
     args.add_option("-s,--scene", scene_file, "Scene file");
     args.add_option("-x,--width", width, "Image width");
     args.add_option("-y,--height", height, "Image height");
+    args.add_option("-n,--num", light_per_pixel, "Sample number");
     args.add_option("-o,--output", output_file, "Output file");
     CLI11_PARSE(args, argc, argv); // Now parse!
 
@@ -35,7 +37,7 @@ int main(int argc, char const *argv[]) {
 
     std::vector<Vec3f> framebuffer(width*height);
 
-    BVHTrace(scene, framebuffer, width, height);
+    BVHTrace(scene, framebuffer, width, height, light_per_pixel);
 
     // simpleTrace(scene, framebuffer, width, height);
 
