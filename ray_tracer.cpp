@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <fstream>
 #include <chrono>
+#include <cstdlib>
 
 int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t height) {
     // Setup camera
@@ -25,6 +26,7 @@ int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, siz
 
     pixelholder.resize(height * width, INF_F);
     auto start_t = std::chrono::high_resolution_clock::now();
+    
     #pragma omp parallel for
     for (size_t k = 0; k<rayholder.size(); k++) {
         Ray r = rayholder[k];
@@ -57,29 +59,32 @@ int simpleTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, siz
     return 0;
 }
 
-int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t height) {
+int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t height, int light_per_pixel=4) {
     // Setup camera
     std::vector<Ray> rayholder;
     std::vector<float> pixelholder;
 
     // Generate all rays
-    rayholder.reserve(height * width);
+    rayholder.reserve(height * width * light_per_pixel);
     for (size_t y = 0; y < height; y++) {
-        float ys = (y + 0.5) / height;
         for (size_t x = 0; x < width; x++) {
-            float xs = (x + 0.5) / width;
-            Ray r = scene.cam.generate_ray(xs, ys);
-            rayholder.push_back(r);
+            for (int n = 0; n < light_per_pixel) {
+                float ys = (y + (float) std::rand() / RAND_MAX) / height;
+                float xs = (x + (float) std::rand() / RAND_MAX) / width;
+                Ray r = scene.cam.generate_ray(xs, ys);
+                rayholder.push_back(r);
+            }
         }
     }
 
     // Construct BVH
     BVHAccel bvh(scene.verts, scene.meshes);
 
-    pixelholder.resize(height * width, INF_F);
+    pixelholder.resize(height * width * light_per_pixel, INF_F);
     auto start_t = std::chrono::high_resolution_clock::now();
+
     #pragma omp parallel for
-    for (size_t k = 0; k<rayholder.size(); k++) {
+    for (size_t k = 0; k < rayholder.size(); k++) {
         Ray r = rayholder[k];
         if (bvh.intersect(r))
             pixelholder[k] = r.max_t;
@@ -94,7 +99,9 @@ int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t
     // Get image
     auto min_it = std::min_element(pixelholder.begin(), pixelholder.end());
     for (size_t k = 0; k < framebuffer.size(); k++)
-        framebuffer[k] = Vec3f(*min_it / pixelholder[k]);
+        for (int n = 0; n < light_per_pixel; n++)
+            framebuffer[k] += Vec3f(*min_it / pixelholder[light_per_pixel * k + n]);
+        framebuffer[k] *= 1.f / light_per_pixel;
 
     return 0;
 }
