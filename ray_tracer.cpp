@@ -99,9 +99,10 @@ int BVHTrace(Scene &scene, std::vector<Vec3f> &framebuffer, size_t width, size_t
     // Get image
     auto min_it = std::min_element(pixelholder.begin(), pixelholder.end());
     for (size_t k = 0; k < framebuffer.size(); k++) {
+        float pixel = 0.f;
         for (int n = 0; n < light_per_pixel; n++)
-            framebuffer[k] += Vec3f(*min_it / pixelholder[light_per_pixel * k + n]);
-        framebuffer[k] *= 1.f / light_per_pixel;
+            pixel += *min_it / pixelholder[light_per_pixel * k + n];
+        framebuffer[k] = Vec3f(pixel / light_per_pixel);
     }
 
     return 0;
