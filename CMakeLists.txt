@@ -39,6 +39,8 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/include
 )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+
 ADD_EXECUTABLE(ray-tracer main.cpp scene.cpp intersect.cpp ray_tracer.cpp bvh.cpp)
 set_target_properties(ray-tracer PROPERTIES CXX_FLAGS "-fopenmp")
 TARGET_LINK_LIBRARIES(ray-tracer assimp)
